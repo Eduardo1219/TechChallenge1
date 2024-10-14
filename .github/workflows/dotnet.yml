@@ -6,9 +6,9 @@ on:
   pull_request:
     branches: [ "master" ]
 jobs:
-  check-application:
-    runs-on: ubuntu-latest
   build:
+    runs-on: ubuntu-latest
+  check-application:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
