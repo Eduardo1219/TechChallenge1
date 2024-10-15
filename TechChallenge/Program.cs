@@ -1,6 +1,8 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using TechChallenge1.DomainInjection;
@@ -33,19 +35,48 @@ builder.Services.AddFluentValidationAutoValidation().AddValidatorsFromAssembly(t
 
 builder.Services.AddInfraestructure(builder.Configuration);
 
+builder.Services.AddHealthChecks().AddCheck("self", () => HealthCheckResult.Healthy());
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+
+var counter = Metrics.CreateCounter("fiaptc", "Counts requests to the fiaptc",
+    new CounterConfiguration
+    {
+        LabelNames = new[] { "method", "endpoint" }
+    });
+
+app.Use((context, next) =>
 {
+    counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
+    return next();
+});
+
+
+app.UseMetricServer(settings => settings.EnableOpenMetrics = false);
+app.UseHttpMetrics();
+
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
 app.UseAuthorization();
+app.UseHttpMetrics(options =>
+
+{
+    options.RequestDuration.Enabled = true;
+    options.RequestCount.Enabled = true;
+
+});
+app.MapHealthChecks("/healthz");
+
 
 app.MapControllers();
+
 
 app.Run();

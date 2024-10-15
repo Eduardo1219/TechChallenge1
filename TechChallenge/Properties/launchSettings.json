@@ -42,9 +42,17 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "metrics",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "web_api_metric": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "metrics",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "https://localhost:5001;http://localhost:5000"
       }
     }
   }
